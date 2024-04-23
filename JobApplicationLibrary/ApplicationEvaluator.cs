@@ -26,6 +26,13 @@ namespace JobApplicationLibrary
                 return ApplicationResult.AutoRejected;
             }
 
+            form.ValidationMode = form.Applicant.Age > 50 ? ValidationMode.Detailed : ValidationMode.Quick;
+
+            if (identityValidator.Country != "TURKEY")
+            {
+                return ApplicationResult.TransferredToCTO;
+            }
+
             var validIdentity = identityValidator.IsValid(form.Applicant.IdentityNumber);
 
             if (!validIdentity)

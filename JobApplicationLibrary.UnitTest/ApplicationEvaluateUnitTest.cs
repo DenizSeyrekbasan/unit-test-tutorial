@@ -26,7 +26,7 @@ namespace JobApplicationLibrary.UnitTest
             var appResult = evaluator.Evaluate(form);
 
             //Assert
-            Assert.AreEqual(appResult, ApplicationResult.AutoRejected);
+            Assert.AreEqual(ApplicationResult.AutoRejected, appResult);
 
         }
 
@@ -50,7 +50,7 @@ namespace JobApplicationLibrary.UnitTest
             var appResult = evaluator.Evaluate(form);
 
             //Assert
-            Assert.AreEqual(appResult, ApplicationResult.AutoRejected);
+            Assert.AreEqual(ApplicationResult.AutoRejected, appResult);
         }
 
         [Test]
@@ -75,7 +75,7 @@ namespace JobApplicationLibrary.UnitTest
             var appResult = evaluator.Evaluate(form);
 
             //Assert
-            Assert.AreEqual(appResult, ApplicationResult.AutoAccepted);
+            Assert.AreEqual(ApplicationResult.AutoAccepted, appResult);
         }
 
         [Test]
@@ -85,6 +85,7 @@ namespace JobApplicationLibrary.UnitTest
 
             var mockValidator = new Mock<IIdentityValidator>();
             mockValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(false);
+            //mockValidator.Setup(i => i.CheckConnectionToRemoteServer()).Returns(false);
 
             var evaluator = new ApplicationEvaluator(mockValidator.Object);
             var form = new JobApplication()
@@ -97,9 +98,53 @@ namespace JobApplicationLibrary.UnitTest
             var appResult = evaluator.Evaluate(form);
 
             //Assert
-            Assert.AreEqual(appResult, ApplicationResult.TransferredToHr);
+            Assert.AreEqual(ApplicationResult.TransferredToHr, appResult);
         }
 
+        [Test]
+        public void Application_WithOfficeLocation_TransferredToCTO()
+        {
+            //Arrange
+
+            var mockValidator = new Mock<IIdentityValidator>();
+            mockValidator.Setup(i=> i.Country).Returns("SPAIN");
+
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant()
+                { Age = 25 }
+            };
+
+            //Action
+            var appResult = evaluator.Evaluate(form);
+
+            //Assert
+            Assert.AreEqual(ApplicationResult.TransferredToCTO, appResult);
+        }
+
+        [Test]
+        public void Application_WithOver50_ValidationToDetailed()
+        {
+            //Arrange
+
+            var mockValidator = new Mock<IIdentityValidator>();
+            mockValidator.Setup(i => i.Country).Returns("SPAIN");
+
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant()
+                { Age = 52 }
+            };
+
+            //Action
+            var appResult = evaluator.Evaluate(form);
+            
+
+            //Assert
+            Assert.AreEqual(ValidationMode.Detailed, form.ValidationMode);
+        }
 
     }
 }
